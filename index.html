@@ -22,11 +22,66 @@
       box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
     }
     h1 {
-      font-size: 1.25rem;
+      font-size: 1.5rem;
       text-align: center;
-      color: #333;
+      color: #2c3e50;
       margin-bottom: 20px;
     }
+    /* トップ画面用スタイル */
+    .history-box {
+      margin: 20px 0;
+      padding: 16px;
+      background: #eef2f5;
+      border-radius: 8px;
+    }
+    .history-box h2 {
+      margin-top: 0;
+      font-size: 1.1rem;
+      color: #333;
+      text-align: center;
+      border-bottom: 2px solid #ccc;
+      padding-bottom: 8px;
+    }
+    .history-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      max-height: 200px;
+      overflow-y: auto;
+    }
+    .history-list li {
+      padding: 8px 0;
+      border-bottom: 1px dashed #ccc;
+      font-size: 0.95rem;
+      color: #555;
+      display: flex;
+      justify-content: space-between;
+    }
+    .history-list li:last-child {
+      border-bottom: none;
+    }
+    .empty-history {
+      text-align: center;
+      color: #888;
+      font-size: 0.9rem;
+    }
+    .btn-start {
+      width: 100%;
+      background-color: #3498db;
+      color: #fff;
+      border: none;
+      padding: 14px;
+      font-size: 1.1rem;
+      font-weight: bold;
+      border-radius: 8px;
+      cursor: pointer;
+      margin-top: 10px;
+    }
+    .btn-start:hover {
+      background-color: #2980b9;
+    }
+
+    /* クイズ画面用スタイル */
     .progress {
       font-size: 0.9rem;
       color: #666;
@@ -102,6 +157,16 @@
     .btn-next:hover {
       background-color: #27ae60;
     }
+    .btn-top {
+      background-color: #95a5a6;
+      margin-top: 10px;
+      display: block;
+    }
+    .btn-top:hover {
+      background-color: #7f8c8d;
+    }
+
+    /* 結果画面用スタイル */
     .score-box {
       text-align: center;
       padding: 20px 0;
@@ -109,6 +174,7 @@
     .score-box h2 {
       font-size: 1.5rem;
       color: #2c3e50;
+      margin-top: 0;
     }
     .score-box p {
       font-size: 1.2rem;
@@ -119,9 +185,21 @@
 <body>
 
 <div class="container">
-  <h1>和語 一問一答クイズ</h1>
+  
+  <!-- トップ画面 -->
+  <div id="top-screen">
+    <h1>和語 一問一答クイズ</h1>
+    <div class="history-box">
+      <h2>これまでの成績</h2>
+      <ul class="history-list" id="history-list">
+        <!-- JavaScriptで成績が挿入されます -->
+      </ul>
+    </div>
+    <button class="btn-start" onclick="startQuiz()">クイズを始める</button>
+  </div>
 
-  <div id="quiz-screen">
+  <!-- クイズ画面 -->
+  <div id="quiz-screen" style="display: none;">
     <div class="progress" id="progress">第 1 問 / 全 23 問</div>
     <div class="question-box" id="question">問題文がここに表示されます</div>
     <div class="options" id="options"></div>
@@ -129,174 +207,100 @@
     <button class="btn-next" id="next-btn" onclick="nextQuestion()">次の問題へ</button>
   </div>
 
+  <!-- 結果発表画面 -->
   <div id="score-screen" style="display: none;">
     <div class="score-box">
       <h2>結果発表</h2>
       <p id="score-text"></p>
-      <button class="btn-next" style="display: block;" onclick="restartQuiz()">もう一度挑戦する</button>
+      <button class="btn-next" style="display: block;" onclick="startQuiz()">もう一度挑戦する</button>
+      <button class="btn-next btn-top" onclick="showTopScreen()">トップ画面に戻る</button>
     </div>
   </div>
+
 </div>
 
 <script>
-  // 全単語データ（不要な指示文を削除済み）
+  // 全単語データ
   const rawQuizData = [
-    { 
-      type: 1, 
-      question: "面倒な客をうまく【あしらう】", 
-      options: ["応対する。", "実際よりもよく見えるよう整え、よそおう。", "相手の話にうなずいてうまく調子を合わせること。", "身なりや外観を整える。美しく飾る。"], 
-      answer: "応対する。" 
-    },
-    { 
-      type: 1, 
-      question: "【ありふれた】話だ。", 
-      options: ["どこにでもありそうな。", "物事のこみいった事情。", "よいものの中から、さらに選び抜かれたもの。", "思いやりがない。薄情である。"], 
-      answer: "どこにでもありそうな。" 
-    },
-    { 
-      type: 1, 
-      question: "けんかになった【いきさつ】を先生に説明しなさい。", 
-      options: ["物事のこみいった事情。事件の経過。", "将来に対する明確な見通しや計画。", "他の意志や権力などに従うこと。", "手先や道具を使って物を作る職人。"], 
-      answer: "物事のこみいった事情。事件の経過。" 
-    },
-    { 
-      type: 1, 
-      question: "季節の花で食卓を【いろどる】", 
-      options: ["さまざまな色や物を取り合わせて飾る。", "破れたり壊れたりした箇所を直す。", "見せかける。ふりをする。", "物事がすらすらと運ばなくなる。"], 
-      answer: "さまざまな色や物を取り合わせて飾る。" 
-    },
-    { 
-      type: 1, 
-      question: "【あいづち】を打つ", 
-      options: ["相手の話にうなずいてうまく調子を合わせること。", "物を間に置く。仕切る。", "恐ろしさ・寒さ・興奮などで、体や手足が震える。", "相手を軽んじた扱いをする。"], 
-      answer: "相手の話にうなずいてうまく調子を合わせること。" 
-    },
-    { 
-      type: 1, 
-      question: "【えりすぐり】の商品を全国からお取り寄せできます。", 
-      options: ["よいものの中から、さらに選び抜かれたもの。", "ぐあいの悪いことを隠して、その場をとりなすこと。", "以前から。前もって。", "全体から感じられるようす・ありさま。"], 
-      answer: "よいものの中から、さらに選び抜かれたもの。" 
-    },
-    { 
-      type: 1, 
-      question: "恐怖に【おののく】", 
-      options: ["恐ろしさ・寒さ・興奮などで、体や手足が震える。", "苦しみもがく。苦痛でころげまわる。", "気が進まぬようす。嫌がってなかなか実行しない。", "気持ちを引き締める。緊張する。"], 
-      answer: "恐ろしさ・寒さ・興奮などで、体や手足が震える。" 
-    },
-    { 
-      type: 1, 
-      question: "兵士たちは、【うつろ】な目をして立っていた。", 
-      options: ["ぼんやりして物事を考える力がない様子。", "態度が冷淡であるさま。", "落ち着いていて物に動じないさま。", "実際に見ていたり事情がわかっていたりするさま。"], 
-      answer: "ぼんやりして物事を考える力がない様子。" 
-    },
-    { 
-      type: 1, 
-      question: "母の笑顔が【まざまざ】と脳裏に浮かぶ。", 
-      options: ["目の前で見るようなさま。ありあり。", "条件に恵まれながら、何もできずに終わってしまうさま。", "風や水の勢いに従って横にゆらめくように動くさま。", "手際のよいこと。上手になしとげるさま。"], 
-      answer: "目の前で見るようなさま。ありあり。" 
-    },
-    { 
-      type: 1, 
-      question: "【みすみす】目の前のチャンスを見逃す。", 
-      options: ["条件に恵まれながら、何もできずに終わってしまうさま。", "あることを確かなこととして、身にしみて感じるさま。", "十分に張る。一面にびっしり張るさま。", "そのものが感じさせる風情。しみじみとした味わい。"], 
-      answer: "条件に恵まれながら、何もできずに終わってしまうさま。" 
-    },
-    { 
-      type: 1, 
-      question: "疑いが頭を【もたげる】", 
-      options: ["（それまで目立たなかったものが）表面に出てくる。", "身なりなどをきちんと整える。", "関係をうとくする。打ち解けない。", "気が進まぬようす。嫌がってなかなか実行しない。"], 
-      answer: "（それまで目立たなかったものが）表面に出てくる。" 
-    },
-    { 
-      type: 1, 
-      question: "本心をさとられないよう平静を【よそおう】", 
-      options: ["見せかける。ふりをする。", "他の意志や権力などに従う。", "離しておく。離す。", "物事がすらすらと運ばなくなる。"], 
-      answer: "見せかける。ふりをする。" 
-    },
-    { 
-      type: 1, 
-      question: "古寺の苔むした庭には【おもむき】がある。", 
-      options: ["そのものが感じさせる風情。しみじみとした味わい。", "実際よりもよく見えるように整えた世間体。", "手先や道具を使って物を作る職人の技。", "相手を軽んじた扱い。"], 
-      answer: "そのものが感じさせる風情。しみじみとした味わい。" 
-    },
-    { 
-      type: 1, 
-      question: "かぐや姫は帝に対しても【つれない】態度であった。", 
-      options: ["思いやりがない。薄情である。冷淡である。", "ぼんやりして物事を考える力がない。", "どこにでもありそうな。", "手際がよいこと。巧みである。"], 
-      answer: "思いやりがない。薄情である。冷淡である。" 
-    },
-    { 
-      type: 1, 
-      question: "【かねて】からの計画通り、セブ島に移住します。", 
-      options: ["以前から。前もって。かねがね。", "目の前で見るようなさま。", "実際に見ていたり事情がわかっていたりしながら。", "ぐあいの悪いことを隠して。"], 
-      answer: "以前から。前もって。かねがね。" 
-    },
-    { 
-      type: 1, 
-      question: "客が支払いを【しぶる】", 
-      options: ["気が進まぬようす。嫌がってなかなか実行しない。", "苦しみもがく。苦痛でころげまわる。", "関係をうとくする。打ち解けない。", "色をつける。"], 
-      answer: "気が進まぬようす。嫌がってなかなか実行しない。" 
-    },
-    { 
-      type: 1, 
-      question: "試験場の【はりつめた】空気", 
-      options: ["気持ちを引き締める。緊張する。", "実際よりもよく見えるよう整え、よそおう。", "風や水の勢いに従って横にゆらめくように動く。", "他の意志や権力などに従う。"], 
-      answer: "気持ちを引き締める。緊張する。" 
-    },
-    { 
-      type: 1, 
-      question: "大佐は、【ひややか】に戦況を見守った。", 
-      options: ["落ち着いていて物に動じないさま。冷静なさま。", "目の前で見るようなさま。ありあり。", "内部がからであること。空洞。", "そのものが感じさせる風情。"], 
-      answer: "落ち着いていて物に動じないさま。冷静なさま。" 
-    },
-    { 
-      type: 2, 
-      question: "鯉のぼりが風に（　　）。", 
-      options: ["なびく", "へだてる", "つくろう", "のたうつ"], 
-      answer: "なびく" 
-    },
-    { 
-      type: 2, 
-      question: "激痛に（　　）。", 
-      options: ["のたうつ", "おののく", "つくろう", "へだてる"], 
-      answer: "のたうつ" 
-    },
-    { 
-      type: 2, 
-      question: "言葉（　　）に言い逃れる。", 
-      options: ["たくみ", "うつろ", "ありふれ", "かねて"], 
-      answer: "たくみ" 
-    },
-    { 
-      type: 2, 
-      question: "嘘がばれないようあわててその場を取り（　　）。", 
-      options: ["つくろう", "あしらう", "いろどる", "もたげる"], 
-      answer: "つくろう" 
-    },
-    { 
-      type: 2, 
-      question: "ついたてでテーブルを（　　）。", 
-      options: ["へだてる", "はりつめる", "よそおう", "なびく"], 
-      answer: "へだてる" 
-    }
+    { type: 1, question: "面倒な客をうまく【あしらう】", options: ["応対する。", "実際よりもよく見えるよう整え、よそおう。", "相手の話にうなずいてうまく調子を合わせること。", "身なりや外観を整える。美しく飾る。"], answer: "応対する。" },
+    { type: 1, question: "【ありふれた】話だ。", options: ["どこにでもありそうな。", "物事のこみいった事情。", "よいものの中から、さらに選び抜かれたもの。", "思いやりがない。薄情である。"], answer: "どこにでもありそうな。" },
+    { type: 1, question: "けんかになった【いきさつ】を先生に説明しなさい。", options: ["物事のこみいった事情。事件の経過。", "将来に対する明確な見通しや計画。", "他の意志や権力などに従うこと。", "手先や道具を使って物を作る職人。"], answer: "物事のこみいった事情。事件の経過。" },
+    { type: 1, question: "季節の花で食卓を【いろどる】", options: ["さまざまな色や物を取り合わせて飾る。", "破れたり壊れたりした箇所を直す。", "見せかける。ふりをする。", "物事がすらすらと運ばなくなる。"], answer: "さまざまな色や物を取り合わせて飾る。" },
+    { type: 1, question: "【あいづち】を打つ", options: ["相手の話にうなずいてうまく調子を合わせること。", "物を間に置く。仕切る。", "恐ろしさ・寒さ・興奮などで、体や手足が震える。", "相手を軽んじた扱いをする。"], answer: "相手の話にうなずいてうまく調子を合わせること。" },
+    { type: 1, question: "【えりすぐり】の商品を全国からお取り寄せできます。", options: ["よいものの中から、さらに選び抜かれたもの。", "ぐあいの悪いことを隠して、その場をとりなすこと。", "以前から。前もって。", "全体から感じられるようす・ありさま。"], answer: "よいものの中から、さらに選び抜かれたもの。" },
+    { type: 1, question: "恐怖に【おののく】", options: ["恐ろしさ・寒さ・興奮などで、体や手足が震える。", "苦しみもがく。苦痛でころげまわる。", "気が進まぬようす。嫌がってなかなか実行しない。", "気持ちを引き締める。緊張する。"], answer: "恐ろしさ・寒さ・興奮などで、体や手足が震える。" },
+    { type: 1, question: "兵士たちは、【うつろ】な目をして立っていた。", options: ["ぼんやりして物事を考える力がない様子。", "態度が冷淡であるさま。", "落ち着いていて物に動じないさま。", "実際に見ていたり事情がわかっていたりするさま。"], answer: "ぼんやりして物事を考える力がない様子。" },
+    { type: 1, question: "母の笑顔が【まざまざ】と脳裏に浮かぶ。", options: ["目の前で見るようなさま。ありあり。", "条件に恵まれながら、何もできずに終わってしまうさま。", "風や水の勢いに従って横にゆらめくように動くさま。", "手際のよいこと。上手になしとげるさま。"], answer: "目の前で見るようなさま。ありあり。" },
+    { type: 1, question: "【みすみす】目の前のチャンスを見逃す。", options: ["条件に恵まれながら、何もできずに終わってしまうさま。", "あることを確かなこととして、身にしみて感じるさま。", "十分に張る。一面にびっしり張るさま。", "そのものが感じさせる風情。しみじみとした味わい。"], answer: "条件に恵まれながら、何もできずに終わってしまうさま。" },
+    { type: 1, question: "疑いが頭を【もたげる】", options: ["（それまで目立たなかったものが）表面に出てくる。", "身なりなどをきちんと整える。", "関係をうとくする。打ち解けない。", "気が進まぬようす。嫌がってなかなか実行しない。"], answer: "（それまで目立たなかったものが）表面に出てくる。" },
+    { type: 1, question: "本心をさとられないよう平静を【よそおう】", options: ["見せかける。ふりをする。", "他の意志や権力などに従う。", "離しておく。離す。", "物事がすらすらと運ばなくなる。"], answer: "見せかける。ふりをする。" },
+    { type: 1, question: "古寺の苔むした庭には【おもむき】がある。", options: ["そのものが感じさせる風情。しみじみとした味わい。", "実際よりもよく見えるように整えた世間体。", "手先や道具を使って物を作る職人の技。", "相手を軽んじた扱い。"], answer: "そのものが感じさせる風情。しみじみとした味わい。" },
+    { type: 1, question: "かぐや姫は帝に対しても【つれない】態度であった。", options: ["思いやりがない。薄情である。冷淡である。", "ぼんやりして物事を考える力がない。", "どこにでもありそうな。", "手際がよいこと。巧みである。"], answer: "思いやりがない。薄情である。冷淡である。" },
+    { type: 1, question: "【かねて】からの計画通り、セブ島に移住します。", options: ["以前から。前もって。かねがね。", "目の前で見るようなさま。", "実際に見ていたり事情がわかっていたりしながら。", "ぐあいの悪いことを隠して。"], answer: "以前から。前もって。かねがね。" },
+    { type: 1, question: "客が支払いを【しぶる】", options: ["気が進まぬようす。嫌がってなかなか実行しない。", "苦しみもがく。苦痛でころげまわる。", "関係をうとくする。打ち解けない。", "色をつける。"], answer: "気が進まぬようす。嫌がってなかなか実行しない。" },
+    { type: 1, question: "試験場の【はりつめた】空気", options: ["気持ちを引き締める。緊張する。", "実際よりもよく見えるよう整え、よそおう。", "風や水の勢いに従って横にゆらめくように動く。", "他の意志や権力などに従う。"], answer: "気持ちを引き締める。緊張する。" },
+    { type: 1, question: "大佐は、【ひややか】に戦況を見守った。", options: ["落ち着いていて物に動じないさま。冷静なさま。", "目の前で見るようなさま。ありあり。", "内部がからであること。空洞。", "そのものが感じさせる風情。"], answer: "落ち着いていて物に動じないさま。冷静なさま。" },
+    { type: 2, question: "鯉のぼりが風に（　　）。", options: ["なびく", "へだてる", "つくろう", "のたうつ"], answer: "なびく" },
+    { type: 2, question: "激痛に（　　）。", options: ["のたうつ", "おののく", "つくろう", "へだてる"], answer: "のたうつ" },
+    { type: 2, question: "言葉（　　）に言い逃れる。", options: ["たくみ", "うつろ", "ありふれ", "かねて"], answer: "たくみ" },
+    { type: 2, question: "嘘がばれないようあわててその場を取り（　　）。", options: ["つくろう", "あしらう", "いろどる", "もたげる"], answer: "つくろう" },
+    { type: 2, question: "ついたてでテーブルを（　　）。", options: ["へだてる", "はりつめる", "よそおう", "なびく"], answer: "へだてる" }
   ];
 
   let currentQuestions = [];
   let currentIndex = 0;
   let score = 0;
 
+  // ローカルストレージキー
+  const STORAGE_KEY = 'wagoQuizHistory';
+
   // 配列をシャッフルする関数
   function shuffle(array) {
     return array.slice().sort(() => Math.random() - 0.5);
   }
 
-  // クイズの初期化
-  function initQuiz() {
+  // トップ画面を表示し、履歴を描画
+  function showTopScreen() {
+    document.getElementById('top-screen').style.display = 'block';
+    document.getElementById('quiz-screen').style.display = 'none';
+    document.getElementById('score-screen').style.display = 'none';
+    renderHistory();
+  }
+
+  // 履歴を描画する関数
+  function renderHistory() {
+    const history = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
+    const listElement = document.getElementById('history-list');
+    listElement.innerHTML = '';
+
+    if (history.length === 0) {
+      listElement.innerHTML = '<li class="empty-history">まだ成績がありません</li>';
+      return;
+    }
+
+    history.forEach(record => {
+      const li = document.createElement('li');
+      const dateSpan = document.createElement('span');
+      dateSpan.innerText = record.date;
+      const scoreSpan = document.createElement('span');
+      scoreSpan.innerHTML = `<strong>${record.score}</strong> / ${record.total} 問正解`;
+      
+      li.appendChild(dateSpan);
+      li.appendChild(scoreSpan);
+      listElement.appendChild(li);
+    });
+  }
+
+  // クイズの開始
+  function startQuiz() {
     currentQuestions = shuffle(rawQuizData);
     currentIndex = 0;
     score = 0;
-    document.getElementById('quiz-screen').style.display = 'block';
+    
+    document.getElementById('top-screen').style.display = 'none';
     document.getElementById('score-screen').style.display = 'none';
+    document.getElementById('quiz-screen').style.display = 'block';
+    
     showQuestion();
   }
 
@@ -309,7 +313,6 @@
     const optionsContainer = document.getElementById('options');
     optionsContainer.innerHTML = '';
 
-    // 選択肢をランダムに並び替え
     const shuffledOptions = shuffle(q.options);
 
     shuffledOptions.forEach(opt => {
@@ -354,20 +357,37 @@
     }
   }
 
-  // 最終結果の表示
+  // 日付フォーマット関数（YYYY/MM/DD HH:mm）
+  function getFormattedDate() {
+    const now = new Date();
+    const y = now.getFullYear();
+    const m = String(now.getMonth() + 1).padStart(2, '0');
+    const d = String(now.getDate()).padStart(2, '0');
+    const h = String(now.getHours()).padStart(2, '0');
+    const min = String(now.getMinutes()).padStart(2, '0');
+    return `${y}/${m}/${d} ${h}:${min}`;
+  }
+
+  // 最終結果の表示と履歴の保存
   function showScore() {
     document.getElementById('quiz-screen').style.display = 'none';
     document.getElementById('score-screen').style.display = 'block';
-    document.getElementById('score-text').innerText = `${currentQuestions.length} 問中 ${score} 問 正解でした！`;
+    
+    const total = currentQuestions.length;
+    document.getElementById('score-text').innerText = `${total} 問中 ${score} 問 正解でした！`;
+
+    // 履歴を保存（最新10件まで）
+    let history = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
+    history.unshift({ date: getFormattedDate(), score: score, total: total });
+    if (history.length > 10) {
+      history = history.slice(0, 10);
+    }
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(history));
   }
 
-  // リスタート
-  function restartQuiz() {
-    initQuiz();
-  }
+  // アプリ起動時にトップ画面を表示
+  window.onload = showTopScreen;
 
-  // 起動時にクイズを開始
-  initQuiz();
 </script>
 
 </body>
