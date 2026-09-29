@@ -195,12 +195,12 @@
         <!-- JavaScriptで成績が挿入されます -->
       </ul>
     </div>
-    <button class="btn-start" onclick="startQuiz()">クイズを始める</button>
+    <button class="btn-start" onclick="startQuiz()">クイズを始める（全10問）</button>
   </div>
 
   <!-- クイズ画面 -->
   <div id="quiz-screen" style="display: none;">
-    <div class="progress" id="progress">第 1 問 / 全 23 問</div>
+    <div class="progress" id="progress"></div>
     <div class="question-box" id="question">問題文がここに表示されます</div>
     <div class="options" id="options"></div>
     <div class="result-box" id="result"></div>
@@ -293,7 +293,8 @@
 
   // クイズの開始
   function startQuiz() {
-    currentQuestions = shuffle(rawQuizData);
+    // 23問からランダムに並び替え、最初の10問だけを取り出す
+    currentQuestions = shuffle(rawQuizData).slice(0, 10);
     currentIndex = 0;
     score = 0;
     
